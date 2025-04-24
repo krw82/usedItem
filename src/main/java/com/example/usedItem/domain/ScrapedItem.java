@@ -78,4 +78,5 @@ public class ScrapedItem {
     public void markAsNotified() {
         this.notified = true;
     }
+
 }
