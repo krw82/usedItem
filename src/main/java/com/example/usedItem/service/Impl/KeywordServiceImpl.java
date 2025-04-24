@@ -33,7 +33,7 @@ public class KeywordServiceImpl implements KeywordService {
         // 2. 중복 키워드 확인 (선택 사항)
         if (keywordRepository.existsByUserIdAndKeywordTextAndTargetSiteCode(userId, requestDto.getKeywordText(),
                 requestDto.getTargetSiteCode())) {
-            throw new IllegalArgumentException("이미 등록된 키워드입니다."); // 혹은 다른 처리 방식
+throw new IllegalArgumentException("이미 등록된 키워드입니다."); // 혹은 다른 처리 방식
         }
 
         // 3. Keyword 엔티티 생성 및 저장
