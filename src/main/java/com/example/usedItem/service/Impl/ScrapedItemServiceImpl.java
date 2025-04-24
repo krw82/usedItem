@@ -84,7 +84,7 @@ public class ScrapedItemServiceImpl implements ScrapedItemService {
     @Override
     public void markAsNotified(Long itemId) {
         ScrapedItem item = scrapedItemRepository.findById(itemId)
-                .orElseThrow(() -> new EntityNotFoundException("스크랩된 상품을 찾을 수 없습니다. ID: " + itemId));
+                .orElseThrow(() -> new EntityNotFoundException("스크랩 상품을 찾을 수 없습니다. ID: " + itemId));
 
         // ScrapedItem 엔티티에 상태 변경 메소드 추가 권장
         // 예: item.markAsNotified();
