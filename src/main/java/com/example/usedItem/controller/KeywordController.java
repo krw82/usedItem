@@ -1,54 +1,58 @@
 package com.example.usedItem.controller;
 
+import jakarta.validation.Valid; // javax -> jakarta
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.example.usedItem.domain.UserKeyword;
-import com.example.usedItem.service.UserKeywordService;
+import com.example.usedItem.dto.KeywordRequestDto;
+import com.example.usedItem.dto.KeywordResponseDto;
+import com.example.usedItem.service.KeywordService;
 
 import java.util.List;
 
-@Slf4j
-@RestController // RESTful 웹 서비스의 컨트롤러임을 선언 (@Controller + @ResponseBody)
-@RequestMapping("/api/keywords") // 이 컨트롤러의 모든 핸들러 메소드는 /api/keywords 경로로 매핑됨
+@RestController
+@RequestMapping("/api/users/{userId}/keywords") // 사용자별 키워드 관리를 위한 경로
 @RequiredArgsConstructor
 public class KeywordController {
 
-    private final UserKeywordService userKeywordService; // 서비스 계층 주입
+    private final KeywordService keywordService;
 
-    /**
-     * 새 키워드를 등록하는 API 엔드포인트
-     * HTTP POST /api/keywords
-     * 요청 파라미터: userId, keyword, targetSite
-     */
+    // 키워드 등록
     @PostMapping
-    public ResponseEntity<String> addKeyword(@RequestParam String userId,
-            @RequestParam String keyword,
-            @RequestParam(required = false) String targetSite) { // targetSite는 선택적 파라미터로 변경
-        log.info("API 요청: 키워드 등록 - userId={}, keyword={}, site={}", userId, keyword, targetSite);
-        userKeywordService.registerKeyword(userId, keyword, targetSite);
-        // 성공 시 200 OK 응답과 메시지 반환
-        return ResponseEntity.ok("키워드가 성공적으로 등록되었습니다. (PL/SQL)");
+    public ResponseEntity<KeywordResponseDto> addKeyword(
+            @PathVariable Long userId,
+            @Valid @RequestBody KeywordRequestDto requestDto) { // @Valid로 DTO 유효성 검사 활성화
+        KeywordResponseDto responseDto = keywordService.addKeyword(userId, requestDto);
+        // 생성 성공 시 201 Created 상태 코드와 함께 응답
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
-    /**
-     * 특정 사용자의 키워드 목록을 조회하는 API 엔드포인트
-     * HTTP GET /api/keywords/{userId}
-     * 경로 변수: userId
-     */
-    @GetMapping("/{userId}")
-    public ResponseEntity<List<UserKeyword>> getUserKeywords(@PathVariable String userId) {
-        log.info("API 요청: 사용자 키워드 조회 - userId={}", userId);
-        // PL/SQL 프로시저를 사용하는 서비스 메소드 호출
-        List<UserKeyword> keywords = userKeywordService.getKeywordsForUser(userId);
+    // 특정 사용자의 키워드 목록 조회
+    @GetMapping
+    public ResponseEntity<List<KeywordResponseDto>> getUserKeywords(@PathVariable Long userId) {
+        List<KeywordResponseDto> keywords = keywordService.getKeywordsByUser(userId);
+        return ResponseEntity.ok(keywords); // 조회 성공 시 200 OK
+    }
 
-        // (대안) JPA 쿼리 메소드를 사용하는 서비스 메소드 호출
-        // List<UserKeyword> keywords =
-        // userKeywordService.getKeywordsForUserWithQueryMethod(userId);
+    // 특정 키워드 수정
+    @PutMapping("/{keywordId}")
+    public ResponseEntity<KeywordResponseDto> updateKeyword(
+            @PathVariable Long userId,
+            @PathVariable Long keywordId,
+            @Valid @RequestBody KeywordRequestDto requestDto) {
+        KeywordResponseDto updatedKeyword = keywordService.updateKeyword(userId, keywordId, requestDto);
+        return ResponseEntity.ok(updatedKeyword); // 수정 성공 시 200 OK
+    }
 
-        // 성공 시 200 OK 응답과 키워드 목록(JSON) 반환
-        return ResponseEntity.ok(keywords);
+    // 특정 키워드 삭제
+    @DeleteMapping("/{keywordId}")
+    public ResponseEntity<Void> deleteKeyword(
+            @PathVariable Long userId,
+            @PathVariable Long keywordId) {
+        keywordService.deleteKeyword(userId, keywordId);
+        // 삭제 성공 시 204 No Content 상태 코드 (본문 없음)
+        return ResponseEntity.noContent().build();
     }
 }
