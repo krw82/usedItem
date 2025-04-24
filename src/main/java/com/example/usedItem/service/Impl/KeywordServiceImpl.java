@@ -98,9 +98,9 @@ public class KeywordServiceImpl implements KeywordService {
 
     @Transactional
     @Override
-    public void deleteKeyword(Long userId, Long keywordId) {
+    public void deleteKeyword(Long userIdd, Long keywordId) {
         // 1. 사용자의 특정 키워드 조회 (존재하지 않거나, 사용자의 키워드가 아니면 예외 발생)
-        Keyword keyword = keywordRepository.findByIdAndUserId(keywordId, userId)
+        Keyword keyword = keywordRepository.findByIdAndUserId(keywordId, userIdd)
                 .orElseThrow(() -> new EntityNotFoundException("키워드를 찾을 수 없거나 삭제 권한이 없습니다. keywordId: " + keywordId));
 
         // 2. 키워드 삭제
